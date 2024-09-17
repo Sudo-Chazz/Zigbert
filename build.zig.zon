@@ -1,0 +1,6 @@
+.{ .name = "Zigbert", .paths = .{""}, .version = "0.0.1", .dependencies = .{
+    .tomlz = .{
+        .url = "https://github.com/mattyhall/tomlz/archive/9a16dd53927ef2012478b6494bafb4475e44f4c9.tar.gz",
+        .hash = "1220bec4b4b312251df3cf2271c07956ddd7fe772e004304e8d82c8b0807797eba9d",
+    },
+} }

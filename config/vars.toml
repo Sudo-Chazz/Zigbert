@@ -1,0 +1,8 @@
+[openWeather]
+api_key = "<MD5 hash>"
+coordinates = {lat = 0.00, lon = 0.00}
+units = 'F' # F for Fahrenheit or C for Celsius
+
+[Calendar]
+ical_url = "<ICAL URL>"
+

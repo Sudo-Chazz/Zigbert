@@ -1,8 +1,15 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
+    // build args
     const optimize = b.standardOptimizeOption(.{});
+    const target = b.standardTargetOptions(.{});
+    // add tomlz as a dependency
+    const tomlz = b.dependency("tomlz", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    // configure EXE
     const exe = b.addExecutable(.{
         .name = "fridgeFriend",
         .root_source_file = b.path("src/main.zig"),
@@ -10,5 +17,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    exe.root_module.addImport("tomlz", tomlz.module("tomlz"));
     b.installArtifact(exe);
 }
