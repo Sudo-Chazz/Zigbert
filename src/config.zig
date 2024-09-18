@@ -6,12 +6,17 @@ const mem = std.mem;
 
 const tomlz = @import("tomlz");
 
-pub const Config = struct {
+pub const WeatherConfig = struct {
     ow_key: ArrayList(u8),
-    ical_url: ArrayList(u8),
     lat: f64 = 0.00,
     lon: f64 = 0.00,
-    units: u8 = 'F',
+    units: u8 = 'F', // using a single char for simplicity might change to enum in future
+
+};
+
+pub const Config = struct {
+    weather: WeatherConfig,
+    ical_url: ArrayList(u8),
 
     pub const ConfigError = error{
         ConfigNotFound,
@@ -39,27 +44,24 @@ pub const Config = struct {
         // parse weather vars
         const openWeather_table = parsed_config.getTable("openWeather") orelse return ConfigError.FailedParsingToml;
         const coords = openWeather_table.getTable("coordinates") orelse return ConfigError.FailedParsingToml;
-        const units: u8 = @intCast(openWeather_table.getInteger("units") orelse 'F');
+
+        var weather = WeatherConfig{ .ow_key = ArrayList(u8).init(alloc), .lat = coords.getFloat("lat") orelse 0.00, .lon = coords.getFloat("lon") orelse 0.00, .units = @intCast(openWeather_table.getInteger("units") orelse 'F') };
+        weather.ow_key.appendSlice(openWeather_table.getString("api_key") orelse "") catch return ConfigError.FailedParsingToml;
+
         // parse calendar vars
         const cal_table = parsed_config.getTable("Calendar") orelse return ConfigError.FailedParsingToml;
-
         var parsed: Config = .{
-            .ow_key = ArrayList(u8).init(alloc),
+            .weather = weather,
             .ical_url = ArrayList(u8).init(alloc),
         };
         errdefer parsed.deinit();
-
-        parsed.ow_key.appendSlice(openWeather_table.getString("api_key") orelse "") catch return ConfigError.FailedParsingToml;
-        parsed.lat = coords.getFloat("lat") orelse 0.00;
-        parsed.lon = coords.getFloat("lon") orelse 0.00;
-        parsed.units = units;
         parsed.ical_url.appendSlice(cal_table.getString("ical_url") orelse "") catch return ConfigError.FailedParsingToml;
 
         return parsed;
     }
 
     pub fn deinit(self: *Config) void {
-        self.ow_key.deinit();
+        self.weather.ow_key.deinit();
         self.ical_url.deinit();
     }
 };
